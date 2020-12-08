@@ -1,5 +1,5 @@
 {
-  "name": "node-red-tankerkoenig",
+  "name": "node-red-contrib-tankerkoenig-api",
   "version": "1.0.0",
   "description": "Node-RED Tankerkoenig node for recieving petrol prices from the tankerkoenig api",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PfisterDaniel/node-red-tankerkoenig.git"
+    "url": "git+https://github.com/PfisterDaniel/node-red-contrib-tankerkoenig-api.git"
   },
   "keywords": [
     "tankerkoenig",
@@ -23,13 +23,13 @@
   "license": "MIT",
   "node-red": {
     "nodes": {
-      "tankerkoenig": "tankerkoenig.js"
+      "tankerkoenig": "nodes/tankerkoenig.js"
     }
   },
   "bugs": {
-    "url": "https://github.com/PfisterDaniel/node-red-tankerkoenig/issues"
+    "url": "https://github.com/PfisterDaniel/node-red-contrib-tankerkoenig-api/issues"
   },
-  "homepage": "https://github.com/PfisterDaniel/node-red-tankerkoenig#readme",
+  "homepage": "https://github.com/PfisterDaniel/node-red-contrib-tankerkoenig-api#readme",
   "dependencies": {
     "request": "^2.83.0"
   }
