@@ -31,7 +31,44 @@ Redmatic:
 #### Available nodes:
 | Node | Inputs | Outputs | Description |
 | ------ | ------ | ------ | ------ |
-| Tankerkönig Prices (Input)     | 1 | 1 | Node-RED node to get a list of gasoline prices at specific gas stations |
-| Tankerkönig Prices (Interval)  | 0 | 1 | Node-RED node to get a regular list of gasoline prices for specific gas stations |
-| Tankerkönig List (Interval)    | 0 | 1 | Node-RED node to get a list of petrol stations and their petrol prices within a certain radius on a regular basis |
+| Tankerkönig Prices (Input)     | 1 | 1 | Node-RED node to get a list of gasoline prices at specific gas stations (find the cheapest and most expensive gas station) |
+| Tankerkönig Prices (Interval)  | 0 | 1 | Node-RED node to get a regular list of gasoline prices for specific gas stations (find the cheapest and most expensive gas station) |
+| Tankerkönig List (Interval)    | 0 | 1 | Node-RED node to get a list of petrol stations and their petrol prices within a certain radius on a regular basis (find the cheapest and most expensive gas station) |
 | Tankerkönig Details (Interval) | 0 | 1 | Node-RED node to periodically receive information of a particular gas station |
+
+
+#### Example Outputs:
+
+```yaml
+    {
+        "timestamp":1607447447266,
+        "date":"08.12.2020",
+        "time":"18:10",
+        "cheapest":
+            {
+                "name":"HEM (Seukendorf)",
+                "isOpen":true,
+                "patroltype":"e5",
+                "price":1.239
+            },
+        "most_expensive":
+            {
+                "name":"Shell Station (Cadolzburg)",
+                "isOpen":true,
+                "patroltype":"e5",
+                "price":1.249
+            },
+        "payload":[
+            {
+                "name":"Shell Station (Cadolzburg)",
+                "isOpen":true,"patroltype":"e5","price":1.249
+            },
+            {
+                "name":"HEM (Seukendorf)",
+                "isOpen":true,
+                "patroltype":"e5",
+                "price":1.239
+            }
+        ]
+    }
+ ```
