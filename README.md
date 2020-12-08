@@ -38,30 +38,30 @@ Redmatic:
 
 
 #### Example Outputs:
-
+Node: Tankerkönig Prices
 ```yaml
     {
         "timestamp":1607447447266,
         "date":"08.12.2020",
         "time":"18:10",
-        "cheapest":
-            {
-                "name":"HEM (Seukendorf)",
-                "isOpen":true,
-                "patroltype":"e5",
-                "price":1.239
-            },
-        "most_expensive":
+        "cheapest":{
+            "name":"HEM (Seukendorf)",
+            "isOpen":true,
+            "patroltype":"e5",
+            "price":1.239
+        },
+        "most_expensive":{
+            "name":"Shell Station (Cadolzburg)",
+            "isOpen":true,
+            "patroltype":"e5",
+            "price":1.249
+        },
+        "payload":[
             {
                 "name":"Shell Station (Cadolzburg)",
                 "isOpen":true,
                 "patroltype":"e5",
                 "price":1.249
-            },
-        "payload":[
-            {
-                "name":"Shell Station (Cadolzburg)",
-                "isOpen":true,"patroltype":"e5","price":1.249
             },
             {
                 "name":"HEM (Seukendorf)",
@@ -71,4 +71,86 @@ Redmatic:
             }
         ]
     }
+ ```
+Node: Tankerkönig List
+```yaml
+    {
+        "timestamp":1607448138760,
+        "date":"08.12.2020",
+        "time":"18:22",
+        "payload":[
+            {
+                "id":"519c486f-e2ce-4af2-94de-0d05e8ef4e5b",
+                "name":"Shell Cadolzburg Nuernberger Str. 41",
+                "brand":"Shell",
+                "street":"Nuernberger Str.",
+                "place":"Cadolzburg",
+                "lat":49.463629,
+                "lng":10.859763,
+                "dist":0,
+                "diesel":1.059,
+                "e5":1.249,
+                "e10":1.199,
+                "isOpen":true,
+                "houseNumber":"41",
+                "postCode":90556
+            },
+            {
+                "id":"037ee9bb-b22e-4527-bd82-6da4032cc214",
+                "name":"Seukendorf, Röteweg 2",
+                "brand":"HEM",
+                "street":"Röteweg",
+                "place":"Seukendorf",
+                "lat":49.483692,
+                "lng":10.873313,
+                "dist":2.4,
+                "diesel":1.049,
+                "e5":1.239,
+                "e10":1.189,
+                "isOpen":true,
+                "houseNumber":"2",
+                "postCode":90556
+            }
+        ]
+    }
+ ```
+ Node: Tankerkönig Details
+```yaml
+    {
+        "timestamp":1607448323341,
+        "date":"08.12.2020",
+        "time":"18:25",
+        "payload":{
+            "id":"037ee9bb-b22e-4527-bd82-6da4032cc214",
+            "name":"Seukendorf, Röteweg 2",
+            "brand":"HEM",
+            "street":"Röteweg",
+            "houseNumber":"2",
+            "postCode":90556,
+            "place":"Seukendorf",
+            "openingTimes":[
+                {
+                    "text":"Mo-Fr",
+                    "start":"05:00:00",
+                    "end":"22:00:00"
+                },
+                {
+                    "text":"Samstag, Sonntag, Feiertag",
+                    "start":"06:00:00",
+                    "end":"22:00:00"
+                }
+            ],
+            "overrides":[
+                
+            ],
+            "wholeDay":false,
+            "isOpen":true,
+            "e5":1.239,
+            "e10":1.189,
+            "diesel":1.049,
+            "lat":49.483692,
+            "lng":10.873313,
+            "state":"deBY"
+        }
+    }    
  ```
