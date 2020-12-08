@@ -1,0 +1,839 @@
+<script type='text/javascript'>
+	RED.nodes.registerType('node-red-tankerkoenig-config', {
+    category: 'config',
+        defaults: {
+            name: {value: ""}
+        },
+        credentials: {
+            key: {type:"password"}
+        },
+        icon: "tankerkoenig.png",
+        label: function() {
+            return this.name||"Tankerkönig Account";
+        },
+        oneditsave: function(){
+            console.log('save', this);
+        }
+    });
+</script>
+
+<script type='text/x-red' data-template-name='node-red-tankerkoenig-config'>
+	<div class='form-row'>
+		<label for='node-config-input-name'><i class='fa fa-tag'></i> Name</label>
+		<input type='text' id='node-config-input-name'/>
+	</div>
+	<div class='form-row'>
+		<label for='node-config-input-key'><i class='fa'></i> Api Key</label>
+		<input type='password' id='node-config-input-key' placeholder="API-KEY for Tankerkönig"/>
+    </div>
+    <div class="form-tips">
+        <p><b>Note</b>: You can create a API-Account <a href="https://creativecommons.tankerkoenig.de/api-key">here</a>.</p>
+    </div>
+</script>
+
+<script type='text/javascript'>
+	RED.nodes.registerType('node-red-tankerkoenig-prices-with-input', {
+		category: 'Tankerkoenig',
+        icon: "tankerkoenig.png",
+        paletteLabel: 'Tankerkönig Prices (Input)',
+		defaults: {
+			name: {
+				value: '',
+				required: false
+            },
+            account: {value: "", type:"node-red-tankerkoenig-config", required: true},
+            petroltype: {
+				value: "all",
+				required: true
+			},
+			stations: {value:[{name: '', id : ''}], required: true,
+                validate:function(v) {
+                    var unique = new Set(v.map(function(o) {return o.name;}));
+                    var success = v.length == unique.size && v.length > 0;
+                    return success;
+                }},
+		},
+		label: function() {
+			return this.name ? this.name : 'Tankerkoenig (Prices)'
+		},
+		inputs: 1,
+		outputs: 1,
+		oneditprepare: function() {
+            var un = new Set(this.stations.map(function(o) {return o.name}));
+            if (this.stations.length == un.size) { 
+                $("#valWarning").hide(); 
+            }else { 
+                $("#valWarning").show(); 
+			}
+
+
+			function generateID(i, station) {
+                var container = $('<li/>',{style:"margin:0; padding:8px 0px 0px; border-bottom: 1px solid #ccc;"});
+                var row = $('<div/>').appendTo(container);
+                var row2 = $('<div/>',{style:"padding-top:5px; padding-left:175px;"}).appendTo(container);
+                var row3 = $('<div/>',{style:"padding-top:5px; padding-left:120px;"}).appendTo(container);
+
+                $('<i style="color:#eee; cursor:move; margin-left:3px;" class="node-input-station-handle fa fa-bars"></i>').appendTo(row);
+
+                var nameField = $('<input/>',{class:"node-input-station-name",type:"text",style:"margin-left:7px; width:calc(30% - 32px);", placeholder: 'Name', value:station.name}).appendTo(row);
+                var idField = $('<input/>',{class:"node-input-station-id",type:"text",style:"margin-left:7px; width:calc(70% - 30px);", placeholder: 'ID', value:station.id}).appendTo(row);
+                
+                var finalspan = $('<span/>',{style:"float:right; margin-right:8px;"}).appendTo(row);
+                var deleteButton = $('<a/>',{href:"#",class:"editor-button editor-button-small", style:"margin-top:7px; margin-left:5px;"}).appendTo(finalspan);
+                $('<i/>',{class:"fa fa-remove"}).appendTo(deleteButton);
+
+                deleteButton.click(function() {
+                    container.css({"background":"#fee"});
+                    container.fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                });
+
+                $("#node-input-stations-container").append(container);
+			}
+
+			$("#node-input-add-station").click(function() {
+                generateID($("#node-input-stations-container").children().length+1, {});
+                $("#node-input-stations-container-div").scrollTop($("#node-input-stations-container-div").get(0).scrollHeight);
+            });
+
+            for (var i=0; i<this.stations.length; i++) {
+                var station = this.stations[i];
+                if(station.name != ""){
+                    generateID(i+1,station);
+                }
+            }
+
+            $( "#node-input-stations-container" ).sortable({
+                axis: "y",
+                handle:".node-input-station-handle",
+                cursor: "move"
+			});
+		},
+        oneditsave: function() {
+            var stations = $("#node-input-stations-container").children();
+            var node = this;
+            node.stations = [];
+            stations.each(function(i) {
+                var station = $(this);
+                var o = {
+                    name: station.find(".node-input-station-name").val(),
+                    id: station.find(".node-input-station-id").val(),
+                };
+               
+                node.stations.push(o);
+            });
+        },
+        oneditresize: function() {
+        }
+	})
+</script>
+
+
+<script type='text/x-red' data-template-name='node-red-tankerkoenig-prices-with-input'>
+	<div class='form-row'>
+		<label for='node-input-name'><i class='fa fa-tag'></i> Name</label>
+		<input type='text' id='node-input-name'/>
+    </div>
+    <div class="form-row">
+		<label for="node-input-account"> Account</label>
+		<input type="text" id="node-input-account">
+    </div>
+    <div class='form-row'>
+		<label for='node-input-petroltype'> Type</label>
+		<select id='node-input-petroltype'>
+			<option value="all">All</option>
+			<option value="e5">E5</option>
+			<option value="e10">E10</option>
+			<option value="diesel">Diesel</option>
+		</select>
+	</div>
+    <label for="node-input-width" style="vertical-align:top"><i class="fa fa-map-marker"></i> Stations</label>
+    <div class="form-row node-input-stations-container-row" style="margin-bottom: 0px;width: 100%">
+        <div id="node-input-stations-container-div" style="box-sizing:border-box; border-radius:5px; height:257px; padding:5px; border:1px solid #ccc; overflow-y:scroll; display:inline-block; width:100%">
+            <span id="valWarning" style="color:#910000"><b>Station-ID's must be unique and must be set.</b></span>
+            <ol id="node-input-stations-container" style="list-style-type:none; margin:0;"></ol>
+        </div>
+    </div>
+    <div class="form-row">
+        <a href="#" class="editor-button editor-button-small" id="node-input-add-station" style="margin-top:4px; margin-left:0px;"><i class="fa fa-plus"></i> <span>Add Station-ID</span></a>
+    </div>
+    <div class="form-tips">
+        <p><b>Note</b>: You can get Station-ID's <a href="https://creativecommons.tankerkoenig.de/TankstellenFinder/index.html">here</a>.</p>
+    </div>
+</script>
+
+
+<script type="text/x-red" data-help-name="node-red-tankerkoenig-prices-with-input">
+    <p>Node-RED node to get a list of gasoline prices at specific gas stations</p>
+
+    <h3>Input</h3>
+    <dl class="message-properties">
+        <dt class="optional">payload
+            <span class="property-type">any</span>
+        </dt>
+        <dd> initiates execution </dd>
+    </dl>
+    <h3>Output <code>msg</code> details</h3>
+    <p>
+        <ul>
+            <li><code>msg.timestamp</code> - Timestamp of the data retrieval</li>
+            <li><code>msg.date</code> - Date of the data retrieval in euro format</li>
+            <li><code>msg.time</code> - Time of the data retrieval in 24 hours format</li>
+            <li><code>msg.payload</code> - Determined gas station data</li>
+        </ul>
+    </p>
+    <p>If type is "e5" or "e10" or "diesel"</p>
+    <p>
+        <ul>
+            <li><code>msg.cheapest</code> - The object of the cheapest petrol station</li>
+            <li><code>msg.most_expensive</code> - The Object of the most expensive petrol station</li>
+        </ul>
+    </p>
+    <h3>Output <code>msg.payload[array-id]</code> details</h3>
+    <p><code>msg.payload[array-id]</code> is used as the payload of the published message. It contains the following attributes in every array element:</p>
+    <p>
+        <ul>
+            <li><code>msg.payload[array-id].name</code> - Defined name of the station e.g: Shell Station</li>
+            <li><code>msg.payload[array-id].isOpen</code> - Is Station opend or closed e.g: true</li>
+            <li><code>msg.payload[array-id].timestamp</code> - Javascript Timestamp e.g: 1607427083943</li>
+            <li><code>msg.payload[array-id].date</code> - Euro Date e.g: 01.01.2020</li>
+            <li><code>msg.payload[array-id].time</code> - Time in 24 hour format e.g: 13:30</li>
+            <li><code>msg.payload[array-id].prices</code>, <code>msg.payload.e5</code>, <code>msg.payload.e10</code>, <code>msg.payload.diesel</code> - Price output in EURO and as number</li>
+        </ul>
+    </p>
+    <p>If type is "all"</p>
+    <p>
+        <ul>
+            <li><code>msg.payload[array-id].prices</code> - All prices (e5, e10, diesel) output in EURO and as number</li>
+        </ul>
+    </p>
+    <p>If type is "e5" or "e10" or "diesel"</p>
+    <p>
+        <ul>
+            <li><code>msg.payload[array-id].price</code> - Price output in EURO and as number</li>
+        </ul>
+    </p>
+    <h2>Example (Type "all"):</h2>
+    <pre>
+        <code>
+        <font color="#E45E65">payload</font>: <i>array[1]</i>
+            <font color="#E45E65">0</font>: <i>object</i>
+                <font color="#E45E65">name</font>: "Shell Station"
+                <font color="#E45E65">isOpen</font>: <font color="#4285F4">true</font>
+                <font color="#E45E65">timestamp</font>: <font color="#4285F4">1607427083943</font>
+                <font color="#E45E65">date</font>: "01.01.2020"
+                <font color="#E45E65">time</font>: "13:30"
+                <font color="#E45E65">prices</font>: <i>object</i>
+                    <font color="#E45E65">e5</font>: <font color="#4285F4">1.279</font>
+                    <font color="#E45E65">e10</font>: <font color="#4285F4">1.229</font>
+                    <font color="#E45E65">diesel</font>: <font color="#4285F4">1.089</font>
+        </code>
+    </pre>
+    <h2>Example (Type "e5" or "e10" or "diesel"):</h2>
+    <pre>
+        <code>
+        <font color="#E45E65">payload</font>: <i>array[1]</i>
+            <font color="#E45E65">0</font>: <i>object</i>
+                <font color="#E45E65">name</font>: "Shell Station"
+                <font color="#E45E65">isOpen</font>: <font color="#4285F4">true</font>
+                <font color="#E45E65">timestamp</font>: <font color="#4285F4">1607427083943</font>
+                <font color="#E45E65">date</font>: "01.01.2020"
+                <font color="#E45E65">time</font>: "13:30"
+                <font color="#E45E65">patroltype</font>: "e5"
+                <font color="#E45E65">price</font>: <font color="#4285F4">1.279</font>
+        </code>
+    </pre>
+
+    <h3>References</h3>
+    <ul>
+        <li><a href="https://creativecommons.tankerkoenig.de/">Tankerkoenig api reference description</a> </li>
+    </ul>
+ </script>
+
+<script type='text/javascript'>
+	RED.nodes.registerType('node-red-tankerkoenig-prices-with-interval', {
+		category: 'Tankerkoenig',
+        icon: "tankerkoenig.png",
+        paletteLabel: 'Tankerkönig Prices (Interval)',
+		defaults: {
+			name: {
+				value: '',
+				required: false
+            },
+            account: {value: "", type:"node-red-tankerkoenig-config", required: true},
+            petroltype: {
+				value: "all",
+				required: true
+            },
+            triggerInterval: {value:"300000"},
+			stations: {value:[{name: '', id : ''}], required: true,
+                validate:function(v) {
+                    var unique = new Set(v.map(function(o) {return o.name;}));
+                    var success = v.length == unique.size && v.length > 0;
+                    return success;
+                }},
+		},
+		label: function() {
+			return this.name ? this.name : 'Tankerkoenig (Prices)'
+		},
+		inputs: 0,
+		outputs: 1,
+		oneditprepare: function() {
+            var un = new Set(this.stations.map(function(o) {return o.name}));
+            if (this.stations.length == un.size) { 
+                $("#valWarning").hide(); 
+            }else { 
+                $("#valWarning").show(); 
+			}
+
+
+			function generateID(i, station) {
+                var container = $('<li/>',{style:"margin:0; padding:8px 0px 0px; border-bottom: 1px solid #ccc;"});
+                var row = $('<div/>').appendTo(container);
+                var row2 = $('<div/>',{style:"padding-top:5px; padding-left:175px;"}).appendTo(container);
+                var row3 = $('<div/>',{style:"padding-top:5px; padding-left:120px;"}).appendTo(container);
+
+                $('<i style="color:#eee; cursor:move; margin-left:3px;" class="node-input-station-handle fa fa-bars"></i>').appendTo(row);
+
+                var nameField = $('<input/>',{class:"node-input-station-name",type:"text",style:"margin-left:7px; width:calc(30% - 32px);", placeholder: 'Name', value:station.name}).appendTo(row);
+                var idField = $('<input/>',{class:"node-input-station-id",type:"text",style:"margin-left:7px; width:calc(70% - 30px);", placeholder: 'ID', value:station.id}).appendTo(row);
+                
+                var finalspan = $('<span/>',{style:"float:right; margin-right:8px;"}).appendTo(row);
+                var deleteButton = $('<a/>',{href:"#",class:"editor-button editor-button-small", style:"margin-top:7px; margin-left:5px;"}).appendTo(finalspan);
+                $('<i/>',{class:"fa fa-remove"}).appendTo(deleteButton);
+
+                deleteButton.click(function() {
+                    container.css({"background":"#fee"});
+                    container.fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                });
+
+                $("#node-input-stations-container").append(container);
+			}
+
+			$("#node-input-add-station").click(function() {
+                generateID($("#node-input-stations-container").children().length+1, {});
+                $("#node-input-stations-container-div").scrollTop($("#node-input-stations-container-div").get(0).scrollHeight);
+            });
+
+            for (var i=0; i<this.stations.length; i++) {
+                var station = this.stations[i];
+                if(station.name != ""){
+                    generateID(i+1,station);
+                }
+            }
+
+            $( "#node-input-stations-container" ).sortable({
+                axis: "y",
+                handle:".node-input-station-handle",
+                cursor: "move"
+			});
+		},
+        oneditsave: function() {
+            var stations = $("#node-input-stations-container").children();
+            var node = this;
+            node.stations = [];
+            stations.each(function(i) {
+                var station = $(this);
+                var o = {
+                    name: station.find(".node-input-station-name").val(),
+                    id: station.find(".node-input-station-id").val(),
+                };
+               
+                node.stations.push(o);
+            });
+        },
+        oneditresize: function() {
+        }
+	})
+</script>
+
+
+<script type='text/x-red' data-template-name='node-red-tankerkoenig-prices-with-interval'>
+	<div class='form-row'>
+		<label for='node-input-name'><i class='fa fa-tag'></i> Name</label>
+		<input type='text' id='node-input-name'/>
+    </div>
+    <div class="form-row">
+		<label for="node-input-account"> Account</label>
+		<input type="text" id="node-input-account">
+    </div>
+    <div class='form-row'>
+		<label for='node-input-petroltype'> Type</label>
+		<select id='node-input-petroltype'>
+			<option value="all">All</option>
+			<option value="e5">E5</option>
+			<option value="e10">E10</option>
+			<option value="diesel">Diesel</option>
+		</select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-triggerInterval"style="width:130px" ><i class="fa fa-clock-o"></i> Trigger Interval:</label>
+        <select id="node-input-triggerInterval" style="width:calc(100% - 140px);">
+            <option value="300000">5 Minutes</option>
+            <option value="600000">10 Minutes</option>
+            <option value="900000">15 Minutes</option>
+            <option value="1800000">30 Minutes</option>
+            <option value="3600000">60 Minutes</option>
+        </select>
+    </div>
+    <label for="node-input-width" style="vertical-align:top"><i class="fa fa-map-marker"></i> Stations</label>
+    <div class="form-row node-input-stations-container-row" style="margin-bottom: 0px;width: 100%">
+        <div id="node-input-stations-container-div" style="box-sizing:border-box; border-radius:5px; height:257px; padding:5px; border:1px solid #ccc; overflow-y:scroll; display:inline-block; width:100%">
+            <span id="valWarning" style="color:#910000"><b>Station-ID's must be unique and must be set.</b></span>
+            <ol id="node-input-stations-container" style="list-style-type:none; margin:0;"></ol>
+        </div>
+    </div>
+    <div class="form-row">
+        <a href="#" class="editor-button editor-button-small" id="node-input-add-station" style="margin-top:4px; margin-left:0px;"><i class="fa fa-plus"></i> <span>Add Station-ID</span></a>
+    </div>
+    <div class="form-tips">
+        <p><b>Note</b>: You can get Station-ID's <a href="https://creativecommons.tankerkoenig.de/TankstellenFinder/index.html">here</a>.</p>
+    </div>
+</script>
+
+
+<script type="text/x-red" data-help-name="node-red-tankerkoenig-prices-with-interval">
+    <p>Node-RED node to get a regular list of gasoline prices for specific gas stations</p>
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">array[]</span></dt>
+        <dd>The standard output of the node. The data of the <b>patrol stations</b> are given in the array elements.</dd>
+    </dl>
+    <h3>Output <code>msg</code> details</h3>
+    <p>
+        <ul>
+            <li><code>msg.timestamp</code> - Timestamp of the data retrieval</li>
+            <li><code>msg.date</code> - Date of the data retrieval in euro format</li>
+            <li><code>msg.time</code> - Time of the data retrieval in 24 hours format</li>
+            <li><code>msg.payload</code> - Determined gas station data</li>
+        </ul>
+    </p>
+    <p>If type is "e5" or "e10" or "diesel"</p>
+    <p>
+        <ul>
+            <li><code>msg.cheapest</code> - The object of the cheapest petrol station</li>
+            <li><code>msg.most_expensive</code> - The Object of the most expensive petrol station</li>
+        </ul>
+    </p>
+    <h3>Output <code>msg.payload[array-id]</code> details</h3>
+    <p><code>msg.payload[array-id]</code> is used as the payload of the published message. It contains the following attributes in every array element:</p>
+    <p>
+        <ul>
+            <li><code>msg.payload[array-id].name</code> - Defined name of the station e.g: Shell Station</li>
+            <li><code>msg.payload[array-id].isOpen</code> - Is Station opend or closed e.g: true</li>
+            <li><code>msg.payload[array-id].timestamp</code> - Javascript Timestamp e.g: 1607427083943</li>
+            <li><code>msg.payload[array-id].date</code> - Euro Date e.g: 01.01.2020</li>
+            <li><code>msg.payload[array-id].time</code> - Time in 24 hour format e.g: 13:30</li>
+            <li><code>msg.payload[array-id].prices</code>, <code>msg.payload.e5</code>, <code>msg.payload.e10</code>, <code>msg.payload.diesel</code> - price output in EURO and as number</li>
+        </ul>
+    </p>
+    <p>If type is "all"</p>
+    <p>
+        <ul>
+            <li><code>msg.payload[array-id].prices</code> - All prices (e5, e10, diesel) output in EURO and as number</li>
+        </ul>
+    </p>
+    <p>If type is "e5" or "e10" or "diesel"</p>
+    <p>
+        <ul>
+            <li><code>msg.payload[array-id].price</code> - Price output in EURO and as number</li>
+        </ul>
+    </p>
+    <h2>Example (Type "all"):</h2>
+    <pre>
+        <code>
+        <font color="#E45E65">payload</font>: <i>array[1]</i>
+            <font color="#E45E65">0</font>: <i>object</i>
+                <font color="#E45E65">name</font>: "Shell Station"
+                <font color="#E45E65">isOpen</font>: <font color="#4285F4">true</font>
+                <font color="#E45E65">timestamp</font>: <font color="#4285F4">1607427083943</font>
+                <font color="#E45E65">date</font>: "01.01.2020"
+                <font color="#E45E65">time</font>: "13:30"
+                <font color="#E45E65">prices</font>: <i>object</i>
+                    <font color="#E45E65">e5</font>: <font color="#4285F4">1.279</font>
+                    <font color="#E45E65">e10</font>: <font color="#4285F4">1.229</font>
+                    <font color="#E45E65">diesel</font>: <font color="#4285F4">1.089</font>
+        </code>
+    </pre>
+    <h2>Example (Type "e5" or "e10" or "diesel"):</h2>
+    <pre>
+        <code>
+        <font color="#E45E65">payload</font>: <i>array[1]</i>
+            <font color="#E45E65">0</font>: <i>object</i>
+                <font color="#E45E65">name</font>: "Shell Station"
+                <font color="#E45E65">isOpen</font>: <font color="#4285F4">true</font>
+                <font color="#E45E65">timestamp</font>: <font color="#4285F4">1607427083943</font>
+                <font color="#E45E65">date</font>: "01.01.2020"
+                <font color="#E45E65">time</font>: "13:30"
+                <font color="#E45E65">patroltype</font>: "e5"
+                <font color="#E45E65">price</font>: <font color="#4285F4">1.279</font>
+        </code>
+    </pre>
+
+    <h3>References</h3>
+    <ul>
+        <li><a href="https://creativecommons.tankerkoenig.de/">Tankerkoenig api reference description</a> </li>
+    </ul>
+ </script>
+
+
+ <script type='text/javascript'>
+	RED.nodes.registerType('node-red-tankerkoenig-list-with-interval', {
+		category: 'Tankerkoenig',
+        icon: "tankerkoenig.png",
+        paletteLabel: 'Tankerkönig List (Interval)',
+		defaults: {
+			name: {
+				value: '',
+				required: false
+            },
+            account: {value: "", type:"node-red-tankerkoenig-config", required: true},
+            petroltype: {
+				value: "all",
+				required: true
+            },
+            triggerInterval: {value:"300000"},
+            radius: {
+				value: '',
+				required: true
+            },
+            lat: {
+				value: '',
+				required: true
+            },
+            lon: {
+				value: '',
+				required: true
+            },
+		},
+		label: function() {
+			return this.name ? this.name : 'Tankerkoenig (List)'
+		},
+		inputs: 0,
+		outputs: 1,
+		oneditprepare: function() {
+            console.log('prepare', this);
+		},
+        oneditsave: function() {
+            console.log('save', this);
+        },
+        oneditresize: function() {
+            console.log('resize', this);
+        }
+	})
+</script>
+
+<script type='text/x-red' data-template-name='node-red-tankerkoenig-list-with-interval'>
+	<div class='form-row'>
+		<label for='node-input-name'><i class='fa fa-tag'></i> Name</label>
+		<input type='text' id='node-input-name'/>
+    </div>
+    <div class="form-row">
+		<label for="node-input-account"> Account</label>
+		<input type="text" id="node-input-account">
+    </div>
+    <div class='form-row'>
+		<label for='node-input-petroltype'> Type</label>
+		<select id='node-input-petroltype'>
+			<option value="all">All</option>
+			<option value="e5">E5</option>
+			<option value="e10">E10</option>
+			<option value="diesel">Diesel</option>
+		</select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-triggerInterval"style="width:130px" ><i class="fa fa-clock-o"></i> Trigger Interval:</label>
+        <select id="node-input-triggerInterval" style="width:calc(100% - 140px);">
+            <option value="300000">5 Minutes</option>
+            <option value="600000">10 Minutes</option>
+            <option value="900000">15 Minutes</option>
+            <option value="1800000">30 Minutes</option>
+            <option value="3600000">60 Minutes</option>
+        </select>
+    </div>
+    <div class="form-row">
+		<label for="node-input-radius"style="width:130px" ><i class="fa fa-clock-o"></i> Radius</label>
+        <select id="node-input-radius" style="width:calc(100% - 140px);">
+            <option value="1.5">1.5 km</option>
+            <option value="2">2 km</option>
+            <option value="2.5">2.5 km</option>
+            <option value="3">3 km</option>
+            <option value="3.5">3.5 km</option>
+            <option value="4">4 km</option>
+            <option value="4.5">4.5 km</option>
+            <option value="5">5 km</option>
+            <option value="5.5">5.5 km</option>
+            <option value="6">6 km</option>
+            <option value="6.5">6.5 km</option>
+            <option value="7">7 km</option>
+            <option value="7.5">7.5 km</option>
+            <option value="8">8 km</option>
+            <option value="8.5">8.5 km</option>
+            <option value="9">9 km</option>
+            <option value="9.5">9.5 km</option>
+            <option value="10">10 km</option>
+        </select>
+    </div>
+    <div class="form-row">
+		<label for="node-input-lat"> Latitude</label>
+		<input type="text" id="node-input-lat" placeholder="e.g 49.373208">
+    </div>
+    <div class="form-row">
+		<label for="node-input-lon"> Longitude</label>
+		<input type="text" id="node-input-lon" placeholder="e.g 11.076187">
+    </div>
+    <div class="form-tips">
+        <p><b>Note</b>: You can get Latitude and Longitude <a href="https://www.latlong.net"/>here</a>.</p>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="node-red-tankerkoenig-list-with-interval">
+    <p>Node-RED node to get a list of petrol stations and their petrol prices within a certain radius on a regular basis</p>
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">array[]</span></dt>
+        <dd>The standard output of the node. The data of the <b>petrol stations</b> are given in the array elements.</dd>
+    </dl>
+    <h3>Output <code>msg</code> details</h3>
+    <p>
+        <ul>
+            <li><code>msg.timestamp</code> - Timestamp of the data retrieval</li>
+            <li><code>msg.date</code> - Date of the data retrieval in euro format</li>
+            <li><code>msg.time</code> - Time of the data retrieval in 24 hours format</li>
+            <li><code>msg.payload</code> - Determined gas station data</li>
+        </ul>
+    </p>
+    <p>If type is "e5" or "e10" or "diesel"</p>
+    <p>
+        <ul>
+            <li><code>msg.cheapest</code> - The object of the cheapest petrol station</li>
+            <li><code>msg.most_expensive</code> - The Object of the most expensive petrol station</li>
+        </ul>
+    </p>
+
+    <h3>Output <code>msg.payload[array-id]</code> details</h3>
+    <p><code>msg.payload[array-id]</code> is used as the payload of the published message. It contains the following attributes in every array element:</p>
+    <p>
+        <ul>
+            <li><code>msg.payload[array-id].id</code> - Id of the station</li>
+            <li><code>msg.payload[array-id].name</code> - Name e.g: Shell Nürnberg...</li>
+            <li><code>msg.payload[array-id].brand</code> - Brand e.g: Shell or HEM</li>
+            <li><code>msg.payload[array-id].street</code> - Street e.g: Max-Mustermann-Straße</li>
+            <li><code>msg.payload[array-id].place</code> -  City e.g: Nürnberg</li>
+            <li><code>msg.payload[array-id].lat</code> -  Latitude e.g: 49.322434</li>
+            <li><code>msg.payload[array-id].lng</code> -  Longitude e.g: 10.345343</li>
+            <li><code>msg.payload[array-id].dist</code> -  Distance from your location e.g: 2.2</li>
+            <li><code>msg.payload[array-id].isOpen</code> -  Is station is open or closed e.g: true = open, false = closed</li>
+            <li><code>msg.payload[array-id].houseNumber</code> - Housenumber e.g 42</li>
+            <li><code>msg.payload[array-id].postCode</code> - PostCode e.g: 90556</li>
+        </ul>
+    </p>
+    <p>If type is "all"</p>
+    <p>
+        <ul>
+            <li><code>msg.payload[array-id].e5</code> -  Price of patroltype e5 e.g: 1.279</li>
+            <li><code>msg.payload[array-id].e10</code> -  Price of patroltype e10 e.g: 1.249</li>
+            <li><code>msg.payload[array-id].diesel</code> -  Price of patroltype diesel e.g: 1.089</li>
+        </ul>
+    </p>
+    <p>If type is "e5" or "e10" or "diesel"</p>
+    <p>
+        <ul>
+            <li><code>msg.payload[array-id].price</code> -  Price of selected patroltype e.g: 1.279</li>
+        </ul>
+    </p>
+    <h2>Example (Type "all"):</h2>
+    <pre>
+        <code>
+        <font color="#E45E65">payload</font>: <i>array[1]</i>
+            <font color="#E45E65">0</font>: <i>object</i>
+                <font color="#E45E65">id</font>: "24a381e3-0d72-416d-bfd8-b2f65f6e5802"
+                <font color="#E45E65">name</font>: "Esso Tankstelle"
+                <font color="#E45E65">brand</font>: "Esso"
+                <font color="#E45E65">street</font>: "Haupstraße"
+                <font color="#E45E65">place</font>: "Mengkofen"
+                <font color="#E45E65">lat</font>: <font color="#4285F4">48.72210601</font>
+                <font color="#E45E65">lng</font>: <font color="#4285F4">12.44438439</font>
+                <font color="#E45E65">dist</font>: <font color="#4285F4">2.2</font>
+                <font color="#E45E65">e5</font>: <font color="#4285F4">1.279</font>
+                <font color="#E45E65">e10</font>: <font color="#4285F4">1.249</font>
+                <font color="#E45E65">diesel</font>: <font color="#4285F4">1.089</font>
+                <font color="#E45E65">isOpen</font>: <font color="#4285F4">true</font>
+                <font color="#E45E65">houseNumber</font>: "7"
+                <font color="#E45E65">postCode</font>:  <font color="#4285F4">84152</font>
+        </code>
+    </pre>
+    <h2>Example (Type "e5" or "e10" or "diesel"):</h2>
+    <pre>
+        <code>
+        <font color="#E45E65">payload</font>: <i>array[1]</i>
+            <font color="#E45E65">0</font>: <i>object</i>
+                <font color="#E45E65">id</font>: "24a381e3-0d72-416d-bfd8-b2f65f6e5802"
+                <font color="#E45E65">name</font>: "Esso Tankstelle"
+                <font color="#E45E65">brand</font>: "Esso"
+                <font color="#E45E65">street</font>: "Haupstraße"
+                <font color="#E45E65">place</font>: "Mengkofen"
+                <font color="#E45E65">lat</font>: <font color="#4285F4">48.72210601</font>
+                <font color="#E45E65">lng</font>: <font color="#4285F4">12.44438439</font>
+                <font color="#E45E65">dist</font>: <font color="#4285F4">2.2</font>
+                <font color="#E45E65">price</font>: <font color="#4285F4">1.089</font>
+                <font color="#E45E65">isOpen</font>: <font color="#4285F4">true</font>
+                <font color="#E45E65">houseNumber</font>: "7"
+                <font color="#E45E65">postCode</font>:  <font color="#4285F4">84152</font>
+        </code>
+        </code>
+    </pre>
+
+    <h3>References</h3>
+    <ul>
+        <li><a href="https://creativecommons.tankerkoenig.de/">Tankerkoenig api reference description</a> </li>
+    </ul>
+ </script>
+
+
+
+
+<script type='text/javascript'>
+	RED.nodes.registerType('node-red-tankerkoenig-details-with-interval', {
+		category: 'Tankerkoenig',
+        icon: "tankerkoenig.png",
+        paletteLabel: 'Tankerkönig Details (Interval)',
+		defaults: {
+			name: {
+				value: '',
+				required: false
+            },
+            account: {value: "", type:"node-red-tankerkoenig-config", required: true},
+            triggerInterval: {value:"300000"},
+            stationid:{
+				value: '',
+				required: false
+            }
+		},
+		label: function() {
+			return this.name ? this.name : 'Tankerkoenig (Details)'
+		},
+		inputs: 0,
+		outputs: 1,
+		oneditprepare: function() {
+            console.log('prepare', this);
+		},
+        oneditsave: function() {
+            console.log('save', this);
+        },
+        oneditresize: function() {
+            console.log('resize', this);
+        }
+	})
+</script>
+
+<script type='text/x-red' data-template-name='node-red-tankerkoenig-details-with-interval'>
+	<div class='form-row'>
+		<label for='node-input-name'><i class='fa fa-tag'></i> Name</label>
+		<input type='text' id='node-input-name'/>
+    </div>
+    <div class="form-row">
+		<label for="node-input-account"> Account</label>
+		<input type="text" id="node-input-account">
+    </div>
+    <div class="form-row">
+        <label for="node-input-triggerInterval"style="width:130px" ><i class="fa fa-clock-o"></i> Trigger Interval:</label>
+        <select id="node-input-triggerInterval" style="width:calc(100% - 140px);">
+            <option value="300000">5 Minutes</option>
+            <option value="600000">10 Minutes</option>
+            <option value="900000">15 Minutes</option>
+            <option value="1800000">30 Minutes</option>
+            <option value="3600000">60 Minutes</option>
+        </select>
+    </div>
+    <div class="form-row">
+		<label for="node-input-stationid"> Station-ID</label>
+		<input type="text" id="node-input-stationid" placeholder="Station ID">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="node-red-tankerkoenig-details-with-interval">
+    <p>Node-RED node to periodically receive information of a particular gas station</p>
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">object</span></dt>
+        <dd>The standard output of the node. The data of the <b>petrol station</b> that are given in the station id field.</dd>
+    </dl>
+    <h3>Output <code>msg</code> details</h3>
+    <p>
+        <ul>
+            <li><code>msg.timestamp</code> - Timestamp of the data retrieval</li>
+            <li><code>msg.date</code> - Date of the data retrieval in euro format</li>
+            <li><code>msg.time</code> - Time of the data retrieval in 24 hours format</li>
+            <li><code>msg.payload</code> - Determined gas station data</li>
+        </ul>
+    </p>
+
+    <h3>Output <code>msg.payload</code> details</h3>
+    <p><code>msg.payload</code> is used as the payload of the published message. It contains the following attributes:</p>
+    <p>
+        <ul>
+            <li><code>msg.payload.id</code> - Id of the station</li>
+            <li><code>msg.payload.name</code> - Name e.g: Shell Nürnberg...</li>
+            <li><code>msg.payload.brand</code> - Brand e.g: Shell or HEM</li>
+            <li><code>msg.payload.street</code> - Street e.g: Max-Mustermann-Straße</li>
+            <li><code>msg.payload.houseNumber</code> - Housenumber e.g 42</li>
+            <li><code>msg.payload.postCode</code> - PostCode e.g: 90556</li>
+            <li><code>msg.payload.place</code> -  City e.g: Berlin</li>
+            <li><code>msg.payload.openingTimes[array]</code> -  business hours</li>
+            <li><code>msg.payload.overrides[array]</code> -  extended opening times</li>
+            <li><code>msg.payload.wholeDay</code> -  Open all day e.g: true or false</li>
+            <li><code>msg.payload.isOpen</code> -  Is station is open or closed e.g: true = open, false = closed</li>
+            <li><code>msg.payload.e5</code> -  Price of patroltype e5 e.g: 1.279</li>
+            <li><code>msg.payload.e10</code> -  Price of patroltype e10 e.g: 1.249</li>
+            <li><code>msg.payload.diesel</code> -  Price of patroltype diesel e.g: 1.089</li>
+            <li><code>msg.payload.lat</code> -  Latitude e.g: 49.322434</li>
+            <li><code>msg.payload.lng</code> -  Longitude e.g: 10.345343</li>
+            <li><code>msg.payload.state</code> - federal state e.g: BY = Bavaria - Mostly not specified</li>
+        </ul>
+    </p>
+    <h2>Example:</h2>
+    <pre>
+        <code>
+        <font color="#E45E65">payload</font>: <i>array[1]</i>
+            <font color="#E45E65">0</font>: <i>object</i>
+                <font color="#E45E65">id</font>: "24a381e3-0d72-416d-bfd8-b2f65f6e5802"
+                <font color="#E45E65">name</font>: "Esso Tankstelle"
+                <font color="#E45E65">brand</font>: "Esso"
+                <font color="#E45E65">street</font>: "Haupstraße"
+                <font color="#E45E65">houseNumber</font>: "7"
+                <font color="#E45E65">postCode</font>:  <font color="#4285F4">84152</font>
+                <font color="#E45E65">place</font>: "Mengkofen"
+                <font color="#E45E65">openingTimes</font>: <i>array[3]</i>
+                    <font color="#E45E65">0</font>: <i>object</i>
+                        <font color="#E45E65">text</font>: "Mo-Fr"
+                        <font color="#E45E65">start</font>: "06:30:00"
+                        <font color="#E45E65">end</font>: "22:00:00"
+                    <font color="#E45E65">1</font>: <i>object</i>
+                        <font color="#E45E65">text</font>: "Samstag"
+                        <font color="#E45E65">start</font>: "06:30:00"
+                        <font color="#E45E65">end</font>: "21:00:00"
+                    <font color="#E45E65">2</font>: <i>object</i>
+                        <font color="#E45E65">text</font>: "Sonntag, Feiertag"
+                        <font color="#E45E65">start</font>: "08:30:00"
+                        <font color="#E45E65">end</font>: "21:00:00"
+                <font color="#E45E65">overrides</font>: <i>array[0]</i>
+                <font color="#E45E65">wholeDay</font>:  <font color="#4285F4">false</font>
+                <font color="#E45E65">isOpen</font>: <font color="#4285F4">true</font>
+                <font color="#E45E65">e5</font>: <font color="#4285F4">1.279</font>
+                <font color="#E45E65">e10</font>: <font color="#4285F4">1.249</font>
+                <font color="#E45E65">diesel</font>: <font color="#4285F4">1.089</font>
+                <font color="#E45E65">lat</font>: <font color="#4285F4">48.72210601</font>
+                <font color="#E45E65">lng</font>: <font color="#4285F4">12.44438439</font>
+                <font color="#E45E65">state</font>: <i>null</i>
+        </code>
+    </pre>
+
+    <h3>References</h3>
+    <ul>
+        <li><a href="https://creativecommons.tankerkoenig.de/">Tankerkoenig api reference description</a> </li>
+    </ul>
+ </script>
