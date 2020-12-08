@@ -1,4 +1,4 @@
-# [node-red](http://nodered.org)-tankerkoenig
+# [node-red](http://nodered.org)-contrib-tankerkoenig
 Node-RED node to receive actual petrol prices (Tankerkoenig.de/Tankerkönig api).
 
 **Remark:** Only valid for petrol stations in Germany.
@@ -9,8 +9,8 @@ The prices E5, E10 and diesel are output for defined petrol stations.
 **Note:** [Registration](https://creativecommons.tankerkoenig.de/api-key) for an API KEY is required.
 
 ## Installation
-[![NPM](https://nodei.co/npm/node-red-tankerkoenig.png)](https://npmjs.org/package/node-red-tankerkoenig)
-[![Current Release](https://img.shields.io/github/v/release/PfisterDaniel/node-red-tankerkoenig.svg?colorB=4cc61e)](https://github.com/PfisterDaniel/node-red-tankerkoenig/releases/latest)
+[![NPM](https://nodei.co/npm/node-red-contrib-tankerkoenig-api.png)](https://npmjs.org/package/node-red-contrib-tankerkoenig-api)
+[![Current Release](https://img.shields.io/github/v/release/PfisterDaniel/node-red-contrib-tankerkoenig-api.svg?colorB=4cc61e)](https://github.com/PfisterDaniel/node-red-contrib-tankerkoenig-api/releases/latest)
 
 Install from your Node-RED Manage Palette
 
@@ -18,13 +18,13 @@ or
 
 Install using npm
 
-    $ npm install node-red-tankerkoenig
+    $ npm install node-red-contrib-tankerkoenig-api
 
 Redmatic:
 
     $ source /usr/local/addons/redmatic/home/.profile
     $ cd /usr/local/addons/redmatic/var
-    $ npm install --save --no-package-lock --global-style --save-prefix="~" --production node-red-tankerkoenig
+    $ npm install --save --no-package-lock --global-style --save-prefix="~" --production node-red-contrib-tankerkoenig-api
 
 
 
