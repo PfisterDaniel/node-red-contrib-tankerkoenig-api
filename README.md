@@ -1,4 +1,4 @@
-# node-red-tankerkoenig
+# [node-red](http://nodered.org)-tankerkoenig
 Node-RED node to receive actual petrol prices (Tankerkoenig.de/Tankerkönig api).
 
 **Remark:** Only valid for petrol stations in Germany.
@@ -10,6 +10,7 @@ The prices E5, E10 and diesel are output for defined petrol stations.
 
 ## Installation
 [![NPM](https://nodei.co/npm/node-red-tankerkoenig.png)](https://npmjs.org/package/node-red-tankerkoenig)
+[![Current Release](https://img.shields.io/github/v/release/PfisterDaniel/node-red-tankerkoenig.svg?colorB=4cc61e)](https://github.com/PfisterDaniel/node-red-tankerkoenig/releases/latest)
 
 Install from your Node-RED Manage Palette
 
