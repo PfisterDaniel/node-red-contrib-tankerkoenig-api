@@ -29,7 +29,7 @@ Redmatic:
 
 #### Available nodes:
 | Node | Inputs | Outputs | Description |
-| ------ | ------ |
+| ------ | ------ | ------ | ------ |
 | Tankerkönig Prices (Input)     | 1 | 1 | Node-RED node to get a list of gasoline prices at specific gas stations |
 | Tankerkönig Prices (Interval)  | 0 | 1 | Node-RED node to get a regular list of gasoline prices for specific gas stations |
 | Tankerkönig List (Interval)    | 0 | 1 | Node-RED node to get a list of petrol stations and their petrol prices within a certain radius on a regular basis |
