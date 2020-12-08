@@ -23,7 +23,7 @@ Install using npm
 Redmatic:
 
     $ source /usr/local/addons/redmatic/home/.profile
-    $ /usr/local/addons/redmatic/var
+    $ cd /usr/local/addons/redmatic/var
     $ npm install --save --no-package-lock --global-style --save-prefix="~" --production node-red-tankerkoenig
 
 
