@@ -1,4 +1,4 @@
-# [node-red](http://nodered.org)-contrib-tankerkoenig
+# [node-red](http://nodered.org)-contrib-tankerkoenig-api
 Node-RED node to receive actual petrol prices (Tankerkoenig.de/Tankerkönig api).
 
 **Remark:** Only valid for petrol stations in Germany.
