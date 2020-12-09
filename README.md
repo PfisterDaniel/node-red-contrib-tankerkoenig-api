@@ -10,6 +10,7 @@ The prices E5, E10 and diesel are output for defined petrol stations.
 
 ## Installation
 [![NPM](https://nodei.co/npm/node-red-contrib-tankerkoenig-api.png)](https://npmjs.org/package/node-red-contrib-tankerkoenig-api)
+
 [![Current Release](https://img.shields.io/github/v/release/PfisterDaniel/node-red-contrib-tankerkoenig-api.svg?colorB=4cc61e)](https://github.com/PfisterDaniel/node-red-contrib-tankerkoenig-api/releases/latest)
 
 Install from your Node-RED Manage Palette
