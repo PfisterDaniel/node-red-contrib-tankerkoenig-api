@@ -9,7 +9,7 @@ The prices E5, E10 and diesel are output for defined petrol stations.
 **Note:** [Registration](https://creativecommons.tankerkoenig.de/api-key) for an API KEY is required.
 
 ## Donation:
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?hosted_button_id=NF8XH8AMXZV2J)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg?style=flat&logo=PayPal)](https://www.paypal.com/donate/?hosted_button_id=NF8XH8AMXZV2J)
 
 ## Installation
 [![NPM](https://nodei.co/npm/node-red-contrib-tankerkoenig-api.png)](https://npmjs.org/package/node-red-contrib-tankerkoenig-api)
